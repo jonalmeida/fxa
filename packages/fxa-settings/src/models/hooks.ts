@@ -100,6 +100,12 @@ export function useSession() {
   return session;
 }
 
+export function useGleanClientId() {
+  // TODO: Figure out how to get this value...
+  // return GleanMetrics.getClientId();
+  return '1234-1234-1234-1234';
+}
+
 export function useConfig() {
   const { config } = useContext(AppContext);
   if (!config) {

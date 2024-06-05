@@ -52,6 +52,8 @@ export function initializeAppContext() {
     session,
   };
 
+  // TODO resolve clean client id
+
   return context;
 }
 

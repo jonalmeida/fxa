@@ -30,6 +30,7 @@ import FxaClient from './fxa-client';
 import InterTabChannel from './channels/inter-tab';
 import Metrics from './metrics';
 import Notifier from './channels/notifier';
+import Nimbus from './nimbus';
 import OAuthClient from './oauth-client';
 import OAuthRelier from '../models/reliers/oauth';
 import p from './promise';
@@ -134,6 +135,7 @@ Start.prototype = {
         .then(() => this.initializeUser())
         // glean metrics
         .then(() => this.initializeGlean())
+        .then(() => this.initializeNimbusExperiment())
         // depends on nothing
         .then(() => this.initializeFormPrefill())
         // depends on notifier, metrics
@@ -175,6 +177,11 @@ Start.prototype = {
       user: this._user,
       userAgent: this.getUserAgent(),
     });
+  },
+
+  initializeNimbusExperiment() {
+    // TODO call nimbus.
+    return Nimbus.initialize(this._getUniqueUserId(), { language: 'en' });
   },
 
   initializeMetrics() {
