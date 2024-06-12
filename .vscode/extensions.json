@@ -1,9 +1,7 @@
 {
   "recommendations": [
-    "rbbit.typescript-hero",
-    "waderyan.nodejs-extension-pack",
     "esbenp.prettier-vscode",
-    "rust-lang.rust",
+    "rust-lang.rust-analyzer",
     "ms-azuretools.vscode-docker",
     "ms-vsliveshare.vsliveshare",
     "github.vscode-pull-request-github",
