@@ -352,6 +352,7 @@ describe('/linked_account', function () {
           '/linked_account/login'
         );
         glean.registration.complete.reset();
+        glean.thirdPartyAuth.appleLoginComplete.reset();
       });
 
       it('fails if no apple config', async () => {
@@ -431,6 +432,11 @@ describe('/linked_account', function () {
         assert.equal(result.uid, UID);
         assert.ok(result.sessionToken);
         assert.calledOnce(glean.registration.complete);
+        sinon.assert.calledOnceWithExactly(
+          glean.thirdPartyAuth.appleLoginComplete,
+          mockRequest,
+          { reason: 'linking' }
+        );
       });
 
       it('should link existing fxa account and new apple account and return session', async () => {
@@ -477,6 +483,10 @@ describe('/linked_account', function () {
         assert.isTrue(mockDB.createSessionToken.calledOnce);
         assert.equal(result.uid, UID);
         assert.ok(result.sessionToken);
+        sinon.assert.calledWithExactly(
+          glean.thirdPartyAuth.appleLoginComplete,
+          mockRequest
+        );
       });
     });
   });
