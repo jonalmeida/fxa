@@ -120,7 +120,7 @@ const CompleteResetPasswordContainer = ({
   ) => {
     if (accountResetData.verified) {
       // For verified users with OAuth integration, navigate to confirmation page then to the relying party
-      if (isOAuthIntegration(integration) && !integration.isSync()) {
+      if (isOAuthIntegration(integration)) {
         const sensitiveData = { ...accountResetData, email };
         sensitiveDataClient.setData('accountResetData', sensitiveData);
         return navigateWithQuery('/reset_password_verified', {

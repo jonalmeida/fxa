@@ -13,13 +13,21 @@ import {
   useAuthClient,
   useSensitiveDataClient,
 } from '../../../models';
-import { useFinishOAuthFlowHandler } from '../../../lib/oauth/hooks';
+import {
+  FinishOAuthFlowHandlerResult,
+  useFinishOAuthFlowHandler,
+} from '../../../lib/oauth/hooks';
 import OAuthDataError from '../../../components/OAuthDataError';
 import { hardNavigate } from 'fxa-react/lib/utils';
 import { AuthUiErrors } from '../../../lib/auth-errors/auth-errors';
 import { AuthError } from '../../../lib/oauth';
 import { useState } from 'react';
 import GleanMetrics from '../../../lib/glean';
+import firefox from '../../../lib/channels/firefox';
+
+interface FinishWithOAuthResult {
+  (result: FinishOAuthFlowHandlerResult): void;
+}
 
 const ResetPasswordConfirmedContainer = ({
   integration,
@@ -63,34 +71,55 @@ const ResetPasswordConfirmedContainer = ({
   };
 
   const getOauthRedirect = async () => {
-    const { error, redirect } = await finishOAuthFlowHandler(
+    return await finishOAuthFlowHandler(
       uid,
       sessionToken,
       keyFetchToken,
       unwrapBKey
     );
-
-    return { redirect, error };
   };
 
-  const continueWithVerifiedSession = async () => {
+  const validateOauthFlow = async (result: FinishWithOAuthResult) => {
     if (isOAuthIntegration(integration)) {
-      const { redirect, error } = await getOauthRedirect();
+      const { error, redirect, code, state } = await getOauthRedirect();
       if (error) {
         handleOAuthRedirectError(error);
         return;
       }
+
+      result({ error, redirect, code, state });
+    }
+  };
+
+  const continueWithVerifiedSession = async () => {
+    validateOauthFlow(({ redirect }) => {
       if (redirect) {
         hardNavigate(redirect);
         return;
       }
-    }
+    });
     navigateWithQuery(`/settings`);
   };
 
   if (oAuthDataError) {
     return <OAuthDataError error={oAuthDataError} />;
   }
+
+  validateOauthFlow(({ error, redirect, code, state }) => {
+    // To keep the type-system happy; error is already handled.
+    if (error) {
+      return;
+    }
+
+    if (integration.isSync()) {
+      firefox.fxaOAuthLogin({
+        action: 'signin',
+        code,
+        redirect,
+        state,
+      });
+    }
+  });
 
   if (!verified) {
     hardNavigate(`/${location.search}`);
